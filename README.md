@@ -29,6 +29,7 @@ Per-user network flow logging on macOS using `NEFilterDataProvider`. Phase 0 is 
 
 ```
 moat/
+├── Moat.xcodeproj           Xcode project (all targets)
 ├── Package.swift            SPM manifest (MoatCore + tests)
 ├── Moat/                    Host app (requires Xcode to build)
 │   ├── MoatApp.swift
@@ -63,13 +64,19 @@ swift test    # runs RuleEngineTests
 
 System extensions **cannot** be built with SPM alone — they require Xcode targets with proper signing.
 
-1. Open/create an Xcode project with the source files
-2. Create two targets: `Moat` (app) and `MoatFilter` (system extension)
-3. Set bundle IDs: `dev.halfday.moat` and `dev.halfday.moat.filter`
-4. Select your development team
-5. Apply the `.entitlements` files to each target
-6. Embed `MoatFilter.systemextension` in the app at `Contents/Library/SystemExtensions/`
-7. Build & Run
+1. Open `Moat.xcodeproj` in Xcode
+2. Select your development team in **Signing & Capabilities** for all targets (`Moat`, `MoatFilter`, `MoatCore`)
+3. Build & Run the **Moat** scheme (it builds MoatCore → MoatFilter → Moat and embeds the system extension automatically)
+4. Approve the System Extension in **System Settings → Privacy & Security**
+
+**For dev testing** (required for unsigned/dev-signed system extensions):
+
+```bash
+sudo DevToolsSecurity -enable
+systemextensionsctl developer on
+```
+
+> **Note:** The project includes 4 targets: `MoatCore` (framework), `Moat` (host app), `MoatFilter` (system extension), and `MoatTests` (unit tests). The Moat scheme builds all dependencies and embeds MoatFilter at `Contents/Library/SystemExtensions/`.
 
 ## Testing
 
